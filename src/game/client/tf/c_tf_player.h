@@ -231,6 +231,7 @@ public:
 	void StopSaveMeEffect( bool bForceRemoveInstantly = false );
 
 	void UpdateTypingEffect();
+	void ToggleTypingEffect( bool bToggle );
 
 	void CreateTauntWithMeEffect();
 	void StopTauntWithMeEffect();

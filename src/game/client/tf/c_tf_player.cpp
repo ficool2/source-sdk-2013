@@ -4259,6 +4259,8 @@ void C_TFPlayer::SetDormant( bool bDormant )
 		{
 			ShowBirthdayEffect( false );
 		}
+
+		ToggleTypingEffect( false );
 	}
 
 	if ( IsDormant() && !bDormant )
@@ -8138,6 +8140,21 @@ void C_TFPlayer::UpdateTypingEffect()
 		&& !InFirstPersonView()
 		&& ( !m_Shared.IsStealthed() || !IsEnemyPlayer() ) )
 	{
+		ToggleTypingEffect( true );
+	}
+	else
+	{
+		ToggleTypingEffect( false );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void C_TFPlayer::ToggleTypingEffect( bool bToggle )
+{
+	if ( bToggle )
+	{
 		if ( !m_pTypingEffect )
 		{
 			m_pTypingEffect = ParticleProp()->Create( "speech_typing", PATTACH_POINT_FOLLOW, "head" );
@@ -8152,6 +8169,7 @@ void C_TFPlayer::UpdateTypingEffect()
 		}
 	}
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
