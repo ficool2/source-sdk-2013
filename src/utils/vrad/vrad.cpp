@@ -9,6 +9,7 @@
 // vrad.c
 
 #include "vrad.h"
+#include "vraddetailprops.h"
 #include "physdll.h"
 #include "lightmap.h"
 #include "tier1/strtools.h"
@@ -2413,6 +2414,12 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 			if ( ++i < argc )
 			{
 				g_nIndirectPropLightingMode = atoi( argv[i] );
+
+				if ( g_nIndirectPropLightingMode < 0 || g_nIndirectPropLightingMode > LIGHTMODE_INDIRECT_LAST )
+				{
+					Warning( "Error: expected ranged value (0..%d) after '-StaticPropIndirectMode'\n", LIGHTMODE_INDIRECT_LAST );
+					return -1;
+				}
 			}
 			else
 			{

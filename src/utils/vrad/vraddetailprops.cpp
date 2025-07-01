@@ -737,39 +737,41 @@ void ComputeIndirectLightingAtPoint( Vector &position, Vector &normal, Vector &o
 			ColorRGBExp32ToVector( *pLightmap, lightmapColor );
 		}
 
-		// The calculation for indirect prop lighting has went through a handful of iterations
+		// The calculation for indirect prop lighting has went through a handful of iterations.
 		// For the sake of compatibility with maps that may be calibrated against the incorrect forms of indirect lightings,
-		// the user may optionally switch to the old methods of indirect prop lighting
+		// the user may optionally switch to the old methods of indirect prop lighting.
+		//
+		// Mode 0: CSGO
+		// This mode factors in only the dot.
+		// The practical result is this ends up being a middleground of Orangebox and TF2 lighting,
+		// and most closely matches indirect lighting on brush lightmaps.
+		//
+		// Mode 1: TF2
+		// TF2 attempted to include falloff using inverse square law.
+		// Unfortunately, this leads to pretty harsh and unnatural bounced light on props.
+		//
+		// Mode 2: Orangebox (and earlier)
+		// Here, indirect lighting simply took the reflectivity and did not factor in falloff or dot.
+		// This created an unnaturally bright result, but this is what TF2 shipped with on release.
+		Vector vReflectivity = dtexdata[pTex->texdata].reflectivity;
 		switch ( g_nIndirectPropLightingMode )
 		{
-			// Mode 0: CSGO
-			// This mode factors in only the dot.
-			// The practical result is this ends up being a middleground of Orangebox and TF2 lighting,
-			// and most closely matches indirect lighting on brush lightmaps
-			case 0:
-			{
-				VectorMultiply( lightmapColor, dot * dtexdata[pTex->texdata].reflectivity, lightmapColor );
+			case LIGHTMODE_INDIRECT_DOT:
+				vReflectivity *= dot;
 				break;
-			}
-			// Mode 1: TF2
-			// TF2 attempted to include falloff using inverse square law.
-			// Unfortunately, this leads to pretty harsh and unnatural bounced light on props
-			case 1:
-			{
-				float invLengthSqr = 1.0f / ( 1.0f + ( ( vEnd - position ) * surfEnum.m_HitFrac / 128.0 ).LengthSqr() );
-				VectorMultiply( lightmapColor, invLengthSqr * dtexdata[pTex->texdata].reflectivity, lightmapColor );
+
+			case LIGHTMODE_INDIRECT_INVSQRLAW:
+				vReflectivity *= ( 1.0f / ( 1.0f + ( ( vEnd - position ) * surfEnum.m_HitFrac / 128.0 ).LengthSqr() ) );
 				break;
-			}
-			// Mode 2: Orangebox (and earlier)
-			// Here, indirect lighting simply took the reflectivity and did not factor in falloff or dot.
-			// This created an unnaturally bright result, but this is what TF2 shipped with on release.
-			case 2:
-			{
-				VectorMultiply( lightmapColor, dtexdata[pTex->texdata].reflectivity, lightmapColor );
+
+			case LIGHTMODE_INDIRECT_PURE:
 				break;
-			}
+
+			default:
+				Assert( 0 );
 		}
 
+		VectorMultiply( lightmapColor, vReflectivity, lightmapColor );
 		VectorAdd( outColor, lightmapColor, outColor );
 	}
 
